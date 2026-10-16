@@ -1,0 +1,8 @@
+export const ROLES = Object.freeze({ ENTREPRENEUR: 'entrepreneur', INVESTOR: 'investor', ADMIN: 'admin' })
+export const INDUSTRIES = Object.freeze(['Fintech','Healthtech','Edtech','SaaS','E-commerce','AI/ML','Climate','Marketplace','DeepTech','Consumer','Logistics','Other'])
+export const STAGES = Object.freeze(['Idea','Pre-Seed','Seed','Series A','Series B','Growth','Pre-IPO'])
+export const RISK_LEVELS = Object.freeze(['Low','Medium','High'])
+export const INVESTMENT_TYPES = Object.freeze(['Equity','Convertible Note','SAFE','Debt'])
+export const REQUEST_STATUS = Object.freeze({ PENDING: 'pending', ACCEPTED: 'accepted', REJECTED: 'rejected', CANCELLED: 'cancelled' })
+export const NOTIFICATION_TYPES = Object.freeze({ REQUEST: 'request', CONNECTION: 'connection', MESSAGE: 'new_message', SYSTEM: 'system' })
+export const PAGINATION_DEFAULTS = Object.freeze({ page: 1, limit: 12, maxLimit: 50 })

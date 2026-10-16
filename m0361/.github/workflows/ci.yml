@@ -1,0 +1,35 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  lint-test-build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [20]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: npm
+      - run: npm ci
+      - run: npm run lint --if-present
+      - run: npm run format:check --if-present
+      - run: npm test --if-present
+      - run: npm run build
+        env:
+          VITE_API_URL: http://localhost:5000/api
+      - name: Docker build sanity
+        run: docker build -t venturebridge:ci .
+
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: npm audit --audit-level=high || true

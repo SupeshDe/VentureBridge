@@ -1,0 +1,55 @@
+/* Registration card — split form + rocket art. Two colors: #f8f7f4 + #0057ff */
+.rg-page { min-height: 100vh; display: grid; place-items: center; padding: 40px 20px; background: #f8f7f4; background-image: radial-gradient(rgba(0,87,255,.1) 1.2px, transparent 1.2px); background-size: 24px 24px; font-family: 'DM Sans', system-ui, sans-serif; box-sizing: border-box; }
+.rg-card { display: grid; grid-template-columns: 1.05fr 1fr; width: 100%; max-width: 920px; background: #f8f7f4; border: 1px solid #0057ff; border-radius: 18px; overflow: hidden; box-shadow: 0 30px 70px -30px rgba(0,87,255,.4); }
+
+.rg-form { padding: 40px 44px 36px; }
+.rg-brand { display: inline-flex; align-items: center; gap: 9px; text-decoration: none; color: #0057ff; font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800; font-size: 15px; letter-spacing: -.02em; margin-bottom: 22px; }
+.rg-brand-mark { width: 21px; height: 21px; border: 2px solid #0057ff; border-radius: 6px; display: grid; place-items: center; transform: rotate(45deg); flex: none; }
+.rg-brand-mark i { width: 7px; height: 7px; background: #0057ff; border-radius: 2px; display: block; }
+.rg-form h1 { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 25px; letter-spacing: -.02em; color: #0057ff; margin: 0 0 6px; }
+.rg-sub { font-size: 13.5px; color: #0057ff; opacity: .72; margin: 0 0 22px; line-height: 1.55; }
+
+.rg-error { display: flex; align-items: center; gap: 10px; border: 1px solid #FF6B6B; border-radius: 10px; padding: 11px 13px; font-size: 13.5px; font-weight: 500; color: #FF6B6B; margin-bottom: 18px; }
+
+.rg-roles { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 22px; }
+.rg-role { display: flex; align-items: center; gap: 10px; border: 1px solid #0057ff; border-radius: 12px; padding: 11px 13px; cursor: pointer; color: #0057ff; transition: background .15s ease, color .15s ease; }
+.rg-role input { position: absolute; opacity: 0; pointer-events: none; }
+.rg-role svg { flex: none; opacity: .8; }
+.rg-role span { font-size: 13.5px; font-weight: 700; line-height: 1.25; }
+.rg-role small { display: block; font-size: 11px; font-weight: 500; opacity: .7; }
+.rg-role.on { background: #0057ff; color: #f8f7f4; }
+.rg-role.on svg { opacity: 1; }
+
+.rg-label { display: block; font-size: 12px; font-weight: 600; letter-spacing: .02em; color: #0057ff; opacity: .8; margin: 18px 0 2px; }
+.rg-label:first-of-type { margin-top: 0; }
+.rg-input { width: 100%; box-sizing: border-box; background: transparent; border: 0; border-bottom: 1.5px solid #0057ff; border-radius: 0; padding: 10px 2px; font: 500 14.5px 'DM Sans', sans-serif; color: #0057ff; outline: none; }
+.rg-input::placeholder { color: #0057ff; opacity: .4; }
+.rg-input:focus { border-bottom-width: 2.5px; padding-bottom: 9px; }
+.rg-password { position: relative; }
+.rg-eye { position: absolute; right: 0; top: 50%; transform: translateY(-58%); background: none; border: 0; color: #0057ff; opacity: .6; cursor: pointer; padding: 6px; display: grid; place-items: center; }
+.rg-field-error { display: block; font-size: 12.5px; font-weight: 600; color: #FF6B6B; margin-top: 5px; }
+.rg-field-error::before { content: '! '; font-weight: 800; }
+
+.rg-submit { margin-top: 28px; border: 1px solid #0057ff; border-radius: 999px; background: #0057ff; color: #f8f7f4; font: 700 14.5px 'DM Sans', sans-serif; padding: 13px 46px; cursor: pointer; transition: background .15s ease, color .15s ease; }
+.rg-submit:disabled { opacity: .55; cursor: not-allowed; }
+
+.rg-switch { font-size: 13.5px; color: #0057ff; margin: 22px 0 0; }
+.rg-switch a { color: #0057ff; font-weight: 700; }
+
+.rg-art { background: #0057ff; min-height: 100%; }
+.rg-art svg { display: block; width: 100%; height: 100%; }
+.rg-rocket { animation: rg-float 5s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+@keyframes rg-float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
+.rg-flame { animation: rg-flick 0.5s ease-in-out infinite alternate; transform-box: fill-box; transform-origin: 50% 0%; }
+@keyframes rg-flick { from { transform: scaleY(1); } to { transform: scaleY(1.12); } }
+
+@media (max-width: 860px) {
+  .rg-card { grid-template-columns: 1fr; max-width: 480px; }
+  .rg-art { display: none; }
+  .rg-form { padding: 32px 26px 30px; }
+  .rg-submit { width: 100%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rg-rocket, .rg-flame { animation: none; }
+}

@@ -1,0 +1,3 @@
+import mongoose from 'mongoose'
+const investorSchema = new mongoose.Schema({ user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, unique: true }, organization: { type: String, required: true, trim: true }, bio: String, location: { type: String, index: true }, preferredIndustries: [{ type: String, index: true }], preferredStages: [String], preferredLocations: [String], riskPreference: String, investmentType: String, investmentRange: { minimum: Number, maximum: Number, currency: { type: String, default: 'INR' } }, equityMin: Number, equityMax: Number, isVerified: { type: Boolean, default: false } }, { timestamps: true })
+export default mongoose.model('InvestorProfile', investorSchema)

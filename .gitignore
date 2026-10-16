@@ -1,0 +1,39 @@
+node_modules
+dist
+coverage
+.env
+.env.local
+.env.production
+*.log
+.DS_Store
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+.idea
+tmp
+temp
+uploads
+mongodb-data
+.nyc_output
+.vercel
+.netlify
+
+# OS
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+m0361.tar
+
+# Environment secrets
+.env
+.env.*
+!.env.example
+
+# Node dependencies and build output
+node_modules/
+dist/
+coverage/
+
+# Local Salesforce configuration
+.sf/orgs/

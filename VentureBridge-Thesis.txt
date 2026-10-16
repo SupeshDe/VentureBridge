@@ -1,0 +1,582 @@
+================================================================================
+ VENTUREBRIDGE - SMART INVESTOR COLLABORATION PLATFORM
+ Project Thesis Document
+================================================================================
+
+TABLE OF CONTENTS
+-----------------
+1.  Title & Project Identity
+2.  Abstract
+3.  Introduction
+4.  Problem Statement
+5.  Objectives
+6.  Scope (In Scope / Out of Scope)
+7.  Literature Review & Existing Systems
+8.  System Requirements
+    8.1  Functional Requirements (by role)
+    8.2  Non-Functional Requirements
+9.  System Design
+    9.1  System Architecture
+    9.2  Technology Stack
+    9.3  User Roles & Access Control
+    9.4  Database Design (all collections & fields)
+    9.5  REST API Endpoints (complete list)
+    9.6  Smart Matching Algorithm
+    9.7  Core Workflows
+10. Implementation Details (module by module)
+11. Security Implementation
+12. Notification & Email Subsystem
+13. AI-Based Features
+14. Testing & Verification
+15. Results & Discussion
+16. Conclusion
+17. Future Scope
+18. References
+
+
+================================================================================
+1. TITLE & PROJECT IDENTITY
+================================================================================
+Title       : VentureBridge - Smart Investor Collaboration Platform
+Type        : Web-based discovery, matching and collaboration platform
+Domain      : Startup / Investment Technology (FinTech-adjacent, no money movement)
+Stack       : MERN (MongoDB, Express.js, React, Node.js) + Socket.IO
+Version     : 1.0.0
+Tagline     : "Stop pitching strangers. Start every call at 80%."
+
+
+================================================================================
+2. ABSTRACT
+================================================================================
+Early-stage founders waste months cold-emailing investors whose thesis they do
+not fit, while investors drown in unscreened pitch decks. VentureBridge is a
+web platform that connects startups/entrepreneurs with suitable investors
+through a transparent, rule-based Smart Matching engine. Startups register and
+describe their raise; investors describe their thesis; the system scores every
+pair 0-100 across six weighted factors and explains each score. Matched parties
+connect through collaboration requests, real-time chat with document sharing,
+shared data rooms and scheduled calls. A three-role model (Entrepreneur,
+Investor, Admin) governs the platform, with admin verification, content
+moderation, reports handling and analytics. The system deliberately handles no
+money movement - it is a discovery and collaboration layer only.
+
+
+================================================================================
+3. INTRODUCTION
+================================================================================
+Fundraising is a matching problem. A founder raising Rs. 20 lakh for an early-
+stage healthcare startup gains nothing from a Series-B SaaS fund, yet today's
+discovery channels (cold email, demo days, introduction chains) surface such
+mismatches constantly. Investors face the mirror problem: high inbound volume
+with low signal.
+
+VentureBridge treats founder-investor fit as computable. Both sides declare
+structured data (sector, stage, cheque size, geography, risk, equity), the
+platform scores compatibility deterministically, and conversation starts only
+on mutual interest. Trust is enforced through admin verification of accounts
+and profiles, a reporting/moderation loop, and two-way star ratings that are
+only available to connected counterparties.
+
+
+================================================================================
+4. PROBLEM STATEMENT
+================================================================================
+1. Founders cannot efficiently find investors whose thesis matches their raise.
+2. Investors cannot filter inbound startups by thesis fit.
+3. Existing match claims are black boxes - no explanation of WHY a score was given.
+4. Introductions lack context (no shared decks, data rooms, or scheduled calls).
+5. Platforms mix discovery with transactions, creating compliance risk.
+6. Fake profiles and spam erode trust without verification and moderation.
+
+
+================================================================================
+5. OBJECTIVES
+================================================================================
+O1. Let entrepreneurs register, build rich startup profiles and declare funding
+    requirements (amount, equity, stage, sector, location, risk, business model,
+    revenue, team, documents).
+O2. Let investors register, declare investment thesis (range, sectors, stages,
+    locations, risk, equity band) and discover startups.
+O3. Implement a transparent Smart Matching engine producing a 0-100 Match Score
+    with per-factor explanations.
+O4. Provide faceted search and filters on both sides, including minimum match
+    score, minimum rating and Fit/rating sorting.
+O5. Implement the collaboration flow: Send Request -> Accept -> Connection ->
+    Chat (text + document attachments), plus data rooms and call scheduling.
+O6. Provide role dashboards (founder, investor, admin) with actionable metrics.
+O7. Provide admin governance: verification queues, user management (including
+    safe deletion with full data cascade), industries, content moderation,
+    reports queue, platform analytics.
+O8. Notify users in-app and by email for every important event.
+O9. Add AI-style assistance: heuristic startup analysis, match explanations,
+    and a Gemini-powered assistant chat.
+O10. Exclude all money movement; remain a discovery/collaboration layer.
+
+
+================================================================================
+6. SCOPE
+================================================================================
+IN SCOPE
+- Registration, login (JWT httpOnly cookies), role-based access.
+- Startup & investor profiles (create/read/update/delete).
+- Document vault with uploads, visibility rules, pitch-deck linking.
+- Smart matching, match scores, explanations, recommendations.
+- Search, filters, min-score / min-rating filters, sorting.
+- Collaboration requests (send/accept/reject/cancel), connections.
+- Real-time chat (Socket.IO) with document attachments.
+- Data rooms per connection; meeting slot proposals with accept/decline.
+- Express interest (lightweight pre-request signal) + favourites/watchlist.
+- Two-way star reviews restricted to connected parties.
+- Reporting/moderation loop (user reports -> admin queue -> resolve).
+- In-app notifications + transactional emails (welcome, requests, verification,
+  matches, interest, meetings, reviews).
+- Admin panel: overview analytics, users, startups, investors, verification,
+  industries, content, reports.
+- AI: heuristic startup analysis, Gemini assistant chat toggle.
+
+OUT OF SCOPE (v1)
+- Actual investment, payments, escrow, term sheets, cap-table management.
+- Video calling (meeting links are external URLs).
+- Mobile native apps (responsive web only).
+- Automated KYC/identity document OCR (verification is human-reviewed).
+
+
+================================================================================
+7. LITERATURE REVIEW & EXISTING SYSTEMS
+================================================================================
+Existing channels and their gaps:
+- Cold email / LinkedIn outreach: unfiltered, low response, no fit signal.
+- Demo days / pitch events: geography-bound, infrequent, small samples.
+- Angel networks (e.g. AngelList-style listings): listings without explainable
+  fit scoring; diligence tooling is external.
+- Generic freelance/marketplace matching: optimizes for transactions, not
+  high-trust introduction workflows.
+
+VentureBridge differentiates on: (a) deterministic, explainable scoring rather
+than black-box recommendations; (b) verification + moderation + connection-
+gated reviews as a trust stack; (c) diligence tooling (vault, data rooms,
+scheduled calls) inside the introduction workflow; (d) explicit non-custodial
+scope (no money movement).
+
+
+================================================================================
+8. SYSTEM REQUIREMENTS
+================================================================================
+8.1 FUNCTIONAL REQUIREMENTS
+Entrepreneur:
+  FR-E1  Register, login, logout; account activates after admin verification.
+  FR-E2  Create/edit/delete one startup profile: name, tagline, description,
+         logo URL, website, industry, stage, location, risk, business model,
+         target market, revenue, funding amount, valuation, equity offered,
+         team size, founded year, tags, pitch-deck link, visibility.
+  FR-E3  Upload documents (PDF/DOC/PPT/PNG/JPG, 25 MB) with
+         private/connections/public visibility; link decks to the profile.
+  FR-E4  Search/filter investors (industry, stage, location, risk, range,
+         min match score, min rating; sort by fit/rating).
+  FR-E5  View investor profiles, match scores and explanations.
+  FR-E6  Send/track/cancel collaboration requests; accept flow creates a
+         connection + chat thread.
+  FR-E7  Chat with attachments; share data-room files; propose/accept calls.
+  FR-E8  View AI profile insights (completeness, strengths, gaps, risks).
+  FR-E9  Receive investor interest; view own inbound ratings.
+  FR-E10 Rate connected investors (1-5 stars + note).
+
+Investor:
+  FR-I1  Register/login (same gate as above).
+  FR-I2  Create/edit investor profile: organization, bio, location, preferred
+         industries/stages/locations, risk, investment type, investment range,
+         equity band.
+  FR-I3  Discover startups with the same filter set; view full profiles,
+         pitch decks and shared documents.
+  FR-I4  Receive recommended startups with match scores + explanations.
+  FR-I5  Express interest (lightweight signal) or send a full request;
+         accept/reject inbound requests.
+  FR-I6  Favourites/watchlist; withdraw interest.
+  FR-I7  Chat, data rooms, call scheduling (same as founders).
+  FR-I8  Rate connected founders; view own inbound ratings.
+
+Admin:
+  FR-A1  Platform overview analytics (users, roles, messages, documents,
+         verification funnel, request pipeline, 7-day signup chart, system).
+  FR-A2  Manage users: verify/unverify, activate/deactivate, inspect, delete
+         (blocked for self and admins; full data cascade).
+  FR-A3  Verify startups and investor profiles (approval triggers new-match
+         alerts to the opposite side).
+  FR-A4  Manage industries/categories (CRUD, activate/deactivate, delete
+         blocked while in use, usage counts).
+  FR-A5  Moderate uploaded content (list/filter/delete any file).
+  FR-A6  Handle reports queue (pending/reviewing/resolved/dismissed).
+  FR-A7  Any user can report any profile (spam, fraud, inappropriate,
+         fake-profile, harassment, other).
+
+8.2 NON-FUNCTIONAL REQUIREMENTS
+  NFR1 Performance: paginated lists (default 10-12, max 50); matching pools
+       capped at 500 candidates; charts aggregate in-DB where possible.
+  NFR2 Security: bcrypt (12 rounds), JWT httpOnly cookies, role middleware,
+       rate limiting (300/15 min global, stricter auth limiter), Helmet,
+       CORS allowlist, mongo-sanitize, HPP, zod validation, noCache.
+  NFR3 Reliability: graceful shutdown, Mongo retry logging, email fire-and-
+       forget (mail failures never break API requests), request IDs.
+  NFR4 Usability: responsive layouts, ≤10-step type scale, ≤5 button variants,
+       ARIA roles/labels on interactive controls, keyboard-operable dialogs.
+  NFR5 Maintainability: layered backend (routes/controllers/services/models),
+       centralized API client, seed scripts, Docker + CI configs.
+
+
+================================================================================
+9. SYSTEM DESIGN
+================================================================================
+9.1 SYSTEM ARCHITECTURE (high level)
+
+  +----------------+        HTTPS / WSS         +------------------+
+  |  React 19 SPA  | <------------------------> |  Express 4 API   |
+  |  (Vite build)  |   REST (/api/*) +          |  + Socket.IO     |
+  |  AuthContext   |   Socket.IO events         +--------+---------+
+  |  + Recharts    |                                     |
+  +-------+--------+        +-----------------+          | Mongoose 8
+          |         |       |  Nodemailer     |          v
+          |         +------>|  (SMTP)         |   +------+------+
+          |                 +-----------------+   |  MongoDB 7  |
+          |                                       +-------------+
+          +-->  Multer disk vault (uploads/) for pitch decks & attachments
+
+  Request flow: Browser -> Express (helmet/cors/rate-limit/request-id) ->
+  auth middleware (protect + allowRoles) -> zod validation -> controller ->
+  service/model -> MongoDB. Realtime: Socket.IO rooms per conversation with
+  JWT-cookie auth; message:new events; typing indicators.
+
+9.2 TECHNOLOGY STACK
+  Frontend      : React 19, React Router 7, Vite 8, Recharts 3, Socket.IO-
+                  client 4, react-hook-form 7, DiceBear 9 (bot avatars),
+                  Lucide icons
+  Backend       : Node.js 22, Express 4, Mongoose 8, Socket.IO 4,
+                  Multer 2 (uploads), Nodemailer 10 (SMTP mail), Zod 3
+                  (validation), bcryptjs, jsonwebtoken, helmet, cors,
+                  express-rate-limit, morgan, dotenv
+  Database      : MongoDB 7 (WiredTiger)
+  Realtime      : Socket.IO (rooms, typing, message:new, notification:new)
+  AI            : Offline heuristic engine (built-in) + Google Gemini
+                  (gemini-2.0-flash) assistant via server-side proxy
+  DevOps        : Docker + docker-compose (mongo/api/nginx), nginx SPA +
+                  /api proxy, GitHub Actions CI/deploy, Vitest + ESLint +
+                  Prettier
+
+9.3 USER ROLES & ACCESS CONTROL
+  Roles: entrepreneur, investor, admin (User.role).
+  - Public: landing, login, register.
+  - Authenticated: discovery, requests, connections, chat, documents,
+    notifications, settings, AI chat.
+  - Entrepreneur-only: /startup/profile, /discover/investors, interests/received.
+  - Investor-only: /investor/profile, /discover/startups, favourites,
+    interests/me.
+  - Admin-only: /admin/* (dashboard, users, startups, investors,
+    verification, industries, content, reports).
+  Enforcement: JWT (httpOnly cookie, 7d) -> protect middleware ->
+  allowRoles(...) per route, on both page routes (frontend guards) and API
+  routes (authoritative). Admin accounts are created only via seed script,
+  never by public registration. Accounts start unverified; login is blocked
+  with 403 until an admin verifies.
+
+9.4 DATABASE DESIGN (MongoDB collections)
+  users: _id, name, email (unique), password (bcrypt hash, select:false),
+         role[entrepreneur|investor|admin], location, profileImage,
+         isVerified=false, isActive=true, timestamps.
+  startups: owner (User, unique), name, tagline, description, logoUrl,
+         website, industry (idx), startupStage (idx), location (idx),
+         riskPreference, businessModel, targetMarket, revenue{amount,
+         currency}, fundingRequired{amount,currency}, valuation{amount,
+         currency}, equityOffered (0-100), teamSize, foundedYear, tags[],
+         pitchDeckUrl, isVerified=false, visibility=public, timestamps.
+         Method: completionScore() (0-100 over 12 investor-screened fields).
+  investorprofiles: user (User, unique), organization, bio, location,
+         preferredIndustries[], preferredStages[], preferredLocations[],
+         riskPreference, investmentType, investmentRange{min,maximum,
+         currency}, equityMin, equityMax, isVerified=false, timestamps.
+  industries: name (unique), slug, description, isActive=true, timestamps.
+  documents: owner, startup?, connection?, fileName, fileType[pdf|doc|
+         docx|ppt|pptx|png|jpg|jpeg|other], fileUrl (/api/documents/:id/
+         file), fileSize, category[pitch-deck|business-plan|financial|
+         legal|other], description, visibility[private|connections|public],
+         isVerified=false, timestamps.
+  collaborationrequests: sender, receiver, senderRole, receiverRole,
+         startup, message, status[pending|accepted|rejected|cancelled].
+  connections: entrepreneur, investor, startup, request, status[active|
+         inactive|archived], connectedAt, lastActivity. Unique
+         (entrepreneur, investor, startup).
+  conversations: connection (unique), participants[], lastMessage,
+         lastMessageAt, unreadCount{userId: n}.
+  messages: conversation (idx), sender, receiver, message (<=5000 chars),
+         attachment (URL), attachmentType, isRead, timestamps.
+  favourites: investor, startup (unique pair).
+  interests: investor, startup (unique pair), message (<=500), status
+         [new|seen|withdrawn], timestamps.
+  meetings: connection, proposedBy, slots[Date 1-3, future], chosenSlot,
+         link, note, status[proposed|accepted|declined|cancelled].
+  reviews: reviewer, reviewee, startup?, stars 1-5, text (<=500).
+         Unique (reviewer, reviewee). Only creatable between users sharing
+         an ACTIVE connection (enforced in controller).
+  notifications: recipient, type[new_recommendation|new_match|
+         interest_received|meeting_proposed|meeting_accepted|
+         meeting_updated|review_received|collaboration_request|
+         request_accepted|request_rejected|new_message|profile_verified|
+         profile_rejected|admin_announcement|platform_update],
+         title, message, relatedId, relatedModel, isRead=false.
+  reports: reporter, reportedUser?, reportedStartup?, reason[spam|fraud|
+         inappropriate|fake-profile|harassment|other], description
+         (<=1000), status[pending|reviewing|resolved|dismissed],
+         adminNotes, reviewedBy, reviewedAt.
+
+9.5 REST API ENDPOINTS (all mounted under /api)
+  Auth:      POST /auth/register, POST /auth/login, POST /auth/logout,
+             GET /auth/me
+  Startups:  GET /startups (?search,industry,startupStage,location,
+             riskPreference,minFunding,maxFunding,minScore,minRating,
+             sort), GET /startups/:id, GET /startups/me/profile,
+             POST /startups, PUT /startups/me/profile,
+             DELETE /startups/me/profile
+  Investors: GET /investors (same filter family), GET /investors/:id,
+             GET /investors/me/profile, POST /investors,
+             PUT /investors/me/profile, DELETE /investors/me/profile
+  Matching:  GET /matching/investors (entrepreneur, ?minScore&limit),
+             GET /matching/startups (investor), GET /matching/startup/
+             :startupId/investor/:investorId
+  Requests:  POST /requests, GET /requests/sent, GET /requests/received,
+             PUT /requests/:id/accept|reject|cancel
+  Connections: GET /connections, GET /connections/:id,
+             PUT /connections/:id/activity|archive
+  Chat:      GET /chat/conversations, GET /chat/conversations/:id,
+             POST /chat/messages, PUT /chat/conversations/:id/read
+             (+ Socket.IO: message:send, message:new, typing, rooms)
+  Favourites: POST /favourites, GET /favourites, DELETE /favourites/
+             :startupId, GET /favourites/:startupId/check
+  Interests: POST /interests, GET /interests/me, GET /interests/received,
+             DELETE /interests/:id
+  Meetings:  POST /meetings, GET /meetings/connection/:connectionId,
+             PUT /meetings/:id {accept+slot|decline|cancel}
+  Documents: POST /documents (multipart), GET /documents/me,
+             GET /documents/startup/:startupId,
+             GET /documents/connection/:connectionId,
+             GET /documents/:id/file (access-checked download),
+             DELETE /documents/:id
+  Reviews:   POST /reviews, GET /reviews/user/:userId, DELETE /reviews/:id
+  Reports:   POST /reports
+  AI:        GET /ai/startups/:id/analysis (heuristic engine),
+             POST /ai/chat (Gemini proxy; key stays server-side)
+  Industries: GET /industries (active only)
+  Notifications: GET /notifications, GET /notifications/unread/count,
+             PUT /notifications/:id/read, PUT /notifications/read-all,
+             DELETE /notifications/:id
+  Admin (all admin-only): GET /admin/stats (counts + verification funnel
+             + request pipeline + recent signups + 7-day growth + system),
+             GET|DELETE /admin/users[/:id], PUT /admin/users/:id/status,
+             GET /admin/startups, PUT /admin/startups/:id/verification,
+             GET /admin/investors, PUT /admin/investors/:id/verification,
+             GET|POST|PUT|DELETE /admin/industries[/:id],
+             GET|DELETE /admin/documents[/:id],
+             GET /admin/reports, PUT /admin/reports/:id
+
+9.6 SMART MATCHING ALGORITHM
+  Type: deterministic rule-based weighted scoring (transparent, auditable).
+  Inputs: one Startup + one InvestorProfile. Output: score 0-100 + per-factor
+  pass/fail + one-line natural-language explanation.
+  Weights (total 100):
+    Industry Match .............. 30
+    Investment Range Match ...... 25   (fundingRequired.amount within
+                                        investmentRange.minimum-maximum)
+    Startup Stage Match ......... 15   (startupStage in preferredStages)
+    Risk Preference Match ....... 10   (exact match, case-insensitive)
+    Location Match .............. 10   (startup location in preferredLocations
+                                        OR equals investor location)
+    Equity Compatibility ........ 10   (equityOffered within equityMin-
+                                        equityMax; null ask counts as pass)
+  Worked example (matches the project demo data):
+    Startup: Logistics / ask Rs.2 Cr / Seed / Medium risk / Bengaluru /
+             12% equity.
+    Investor: Logistics / Rs.50L-5Cr / Seed / Medium / Bengaluru / 5-20%.
+    30+25+15+10+10+10 = 100 -> "Strong fit at 100%. Aligned on Industry,
+    Investment Range, Startup Stage, Risk Preference, Location, Equity."
+  Verdicts: >=75 Strong fit; 50-74 Worth a conversation; <50 Weak fit.
+  Served two ways: dedicated /matching/* endpoints and inline on discovery
+  lists (?minScore=&sort=matchScore|-matchScore, pool capped at 500).
+
+9.7 CORE WORKFLOWS
+  W1 Registration: register (201, pendingVerification) -> admin verifies
+     (in-app + email) -> login (httpOnly JWT cookie).
+  W2 Discovery: filters (+minScore/minRating/sort) -> score pills with
+     explanations -> detail modal (facts, diligence files, rating, report).
+  W3 Collaboration: Send Request -> receiver Accepts -> Connection +
+     Conversation created -> Chat (text + attachments) -> data room files,
+     call proposals, reviews.
+  W4 Interest (light path): investor expresses interest -> founder notified
+     (in-app + email) -> founder requests when warm.
+  W5 Moderation: any user reports profile -> admin queue -> reviewing ->
+     resolved/dismissed (+ enforce via Users page).
+  W6 Verification: admin approves startup/investor -> owner notified AND
+     top opposite-side matches auto-alerted (capped: 3 investors / 5 founders,
+     score >= 60).
+
+
+================================================================================
+10. IMPLEMENTATION DETAILS (module by module)
+================================================================================
+Frontend pages (src/pages):
+- Landing.jsx + HeroVisual.jsx: marketing page, live matcher demo, static
+  match-report hero card (no cursor effects), testimonial/FAQ/metrics sections.
+- auth/Login.jsx, auth/Register.jsx: split-screen forms, react-hook-form,
+  tabs (email/phone), verification-gated messaging.
+- entrepreneur/EntrepreneurDashboard.jsx: stats strip, sector chart + fit
+  curve (Recharts), top matches with connect actions, investor-interest card,
+  activity feed.
+- investor/InvestorDashboard.jsx: recommended startups with scores, search,
+  favourites + connection counts.
+- startup/StartupProfile.jsx: 4-step profile editor (basics/fit/ask/business
+  & traction) + AI Profile-insights card + received-ratings card.
+- investor/InvestorProfile.jsx: thesis editor + received-ratings card.
+- discover/DiscoverInvestors.jsx, DiscoverStartups.jsx: faceted filters,
+  fit-score + rating filters/sorts, detail modals (facts, diligence files,
+  reviews, report button), connect/interest/favourite actions.
+- requests/Requests.jsx: received/sent/interest tabs with role-aware actions.
+- connections/Connections.jsx: per-connection Room (Files + Schedule + Rate).
+- chat/Messages.jsx: conversation list, bubbles, attachments, read states.
+- Documents.jsx: vault UI (upload with category/visibility, list, open,
+  copy link, delete).
+- Favourites.jsx, Notifications.jsx, Settings.jsx.
+- admin/: Overview (8 stat tiles, growth chart, verification funnel, request
+  pipeline, latest signups, system card), Users (verify/activate/delete with
+  guards), Startups, Investors, Verification queue, Industries CRUD, Content
+  moderation, Reports queue.
+- components: ui/ (Button, Card/Badge/IconTile, Input, Modal, StarRating,
+  BotAvatar via DiceBear), common/ (ErrorBoundary, Loading, ReportButton,
+  AiAssistant Gemini chat widget, DashboardCharacter retired).
+
+Backend (server/src):
+- config: env (typed, fails fast in prod), db (retry logging), upload
+  (multer disk, 25 MB, allowlist), constants.
+- middleware: auth (protect + allowRoles), zod validate, error handler
+  (ValidationError/11000/CastError + requestId), security (sanitize, hpp,
+  noCache), rate limits.
+- services: matchingService (score/explain/pool), notificationService,
+  emailService (9+ templates, graceful no-op without SMTP), discoveryNotify
+  (capped new-match fan-out), aiAnalysisService (heuristic engine).
+- socket: JWT-cookie auth, rooms, typing, persistence + notifications.
+- scripts: createAdmin, seedData (demo users), seedIndustries (12 defaults).
+
+UI system: two-colour brand (#0057ff blue + #f8f7f4 paper) with teal
+(#14B8A6 success/live), amber (#F5B82E pending/attention) and coral (#FF6B6B
+destructive/errors) accents; sharp corners; Plus Jakarta Sans + DM Sans.
+
+
+================================================================================
+11. SECURITY IMPLEMENTATION
+================================================================================
+- Passwords: bcrypt, 12 rounds, never selected by default.
+- Sessions: JWT in httpOnly, SameSite=lax cookies (secure in production).
+- Authorization: protect + allowRoles on every non-public route; frontend
+  guards mirror but never replace backend checks.
+- Abuse: global + auth rate limiters; safe user deletion (self/admin
+  deletion blocked; cascade removes startups, profiles, requests,
+  connections, conversations, messages, favourites, interests, meetings
+  artefacts, documents + stored files, reviews, notifications).
+- Input: zod schemas (strip unknown keys), mongo-sanitize, HPP, file type +
+  size allowlists, Helmet headers, CORS allowlist, request-id tracing.
+
+
+================================================================================
+12. NOTIFICATION & EMAIL SUBSYSTEM
+================================================================================
+Every key event creates an in-app notification (bell + unread counts) and,
+when SMTP is configured, a themed HTML+text email (fire-and-forget; mail
+failures never break API requests; full no-op with debug log otherwise).
+Covered events: welcome (pending verification), request received/accepted/
+declined, interest received, meeting proposed/accepted, verification
+approved/rejected (account, startup, investor), new high-fit matches,
+new reviews, new chat messages (in-app/socket). Mail links use a configured
+public URL (CLIENT_URL_PUBLIC) so they open on phones, never localhost.
+
+
+================================================================================
+13. AI-BASED FEATURES
+================================================================================
+A) Heuristic Startup Analysis (built-in, offline, no vendor): completeness
+   %, extractive summary, strengths (verification, deck, revenue, team,
+   tags, docs), gaps (missing deck/business model/market/team/valuation),
+   risks (early-stage large ask, high dilution, unverified, late-high-risk).
+   Labelled "rule-based" honestly with a non-advice disclaimer.
+B) Match explanations: every score ships a generated sentence naming aligned
+   vs misaligned factors.
+C) Gemini assistant (optional): floating toggle on founder/investor screens;
+   POST /api/ai/chat proxies to gemini-2.0-flash with a platform system
+   prompt, 10-message window, 25 s timeout; key stays server-side; graceful
+   503 when unconfigured.
+
+
+================================================================================
+14. TESTING & VERIFICATION
+================================================================================
+- Static: ESLint (0 errors policy), production `vite build` gates every
+  frontend change; backend modules verified by import smoke tests.
+- Functional (live API + DB): registration (201) -> verification gate (403)
+  -> login (200); enriched startup create; document upload/download/delete
+  with visibility enforcement; interest express/duplicate-409/received;
+  100% scored discovery with explanation; request->accept->connection;
+  review both directions + self-400 + stranger-403 + summary averages;
+  report file->queue->resolve; admin delete with full cascade (two orphan
+  bugs found and fixed this way); growth/stats aggregation output.
+- UAT: role walkthroughs (founder discover->request->chat->room->rate;
+  investor shortlist->interest->meet; admin verify->moderate->analytics).
+- Known honest limits: single-machine manual testing; no automated E2E
+  suite yet (Vitest harness present); performance not load-tested.
+
+
+================================================================================
+15. RESULTS & DISCUSSION
+================================================================================
+The platform delivers the full objective chain: Registration -> Profile ->
+Funding Requirements -> Investor Preferences -> Smart Matching -> Match
+Score (+ explanation) -> Collaboration Request -> Connection -> Chat, and
+the reverse Investor flow. Verification-gated login plus connection-gated
+reviews keep signal quality high without handling money. The deterministic
+matcher proved more explainable (and thesis-appropriate) than a black-box
+recommender; the main trade-off is no learning from behaviour (requires
+interaction-event history - listed in future scope).
+
+
+================================================================================
+16. CONCLUSION
+================================================================================
+VentureBridge meets its objective: a secure, role-based, enterprise-
+structured MERN platform where founders and investors discover each other by
+computable fit, collaborate with real diligence tooling, and build trust
+through verification, moderation and mutual ratings - with no financial
+transactions in scope.
+
+
+================================================================================
+17. FUTURE SCOPE
+================================================================================
+1. LLM upgrade of matching/analysis behind API keys (current heuristic
+   outputs already match the needed shape).
+2. Interaction-event logging -> learning-to-rank re-scoring.
+3. Automated email verification (OTP) and self-serve password reset.
+4. Weekly match-digest emails (cron over existing mailer + matcher).
+5. Video-call embedding; calendar sync for meetings.
+6. Advanced admin analytics (funnels, cohorts, export).
+7. Full-text/Atlas search, file virus scanning, S3/Cloudinary storage.
+8. Mobile apps; internationalization; multi-currency.
+
+
+================================================================================
+18. REFERENCES
+================================================================================
+[1] MongoDB documentation - Data modeling, aggregation, Mongoose ODM.
+[2] Express.js, Socket.IO, React, Vite, Recharts official docs.
+[3] OWASP ASVS - password storage (bcrypt), session handling (httpOnly
+    cookies), input validation, rate limiting.
+[4] Nodemailer, Multer, Zod, DiceBear, jsonwebtoken documentation.
+[5] Google AI Studio (Gemini API) documentation.
+[6] Platform trust & safety practice: verification queues, report triage,
+    connection-gated reputation (as implemented in Sections 9-11).
+
+================================================================================
+END OF DOCUMENT — good luck with your thesis defense.
+================================================================================
