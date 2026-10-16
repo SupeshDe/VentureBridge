@@ -35,7 +35,7 @@ const app = express()
 // Serve the built frontend from /app/dist in Docker.
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
-const frontendPath = path.resolve(__dirname, '../../../dist')
+const frontendPath = '/app/dist'
 
 // Trust proxy for Render and secure cookies.
 app.set('trust proxy', 1)
