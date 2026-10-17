@@ -1,0 +1,39 @@
+name: One-Time Admin Setup
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  create-admin:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: m0361/package-lock.json
+
+      - name: Install dependencies
+        working-directory: m0361
+        run: npm ci
+
+      - name: Create or reset admin account
+        working-directory: m0361
+        env:
+          NODE_ENV: production
+          MONGO_URI: ${{ secrets.MONGO_URI }}
+          ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
+          ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+        run: |
+          test -n "$MONGO_URI" || (echo "MONGO_URI secret is missing" && exit 1)
+          test -n "$ADMIN_EMAIL" || (echo "ADMIN_EMAIL secret is missing" && exit 1)
+          test -n "$ADMIN_PASSWORD" || (echo "ADMIN_PASSWORD secret is missing" && exit 1)
+          npm run seed:admin
